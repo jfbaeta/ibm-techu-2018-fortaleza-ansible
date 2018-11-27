@@ -1,0 +1,151 @@
+---
+# Modificação de VMO:
+- name: Modifica a configuração de VMO minperm%
+  shell: vmo -po minperm%={{minperm}}
+- name: Modifica a configuração de VMO maxperm%
+  shell: yes | vmo -po maxperm%={{maxperm}}
+- name: Modifica a configuração de VMO maxclient%
+  shell: yes | vmo -po maxclient%={{maxclient}}
+- name: Modifica a configuração de VMO strict_maxclient
+  shell: yes | vmo -po strict_maxclient={{strict_maxclient}}
+- name: Modifica a configuração de VMO strict_maxperm
+  shell: yes | vmo -po strict_maxperm={{strict_maxperm}}
+- name: Modifica a configuração de VMO lru_poll_interval
+  shell: yes | vmo -po lru_poll_interval={{lru_poll_interval}}
+- name: Modifica a configuração de VMO minfree
+  shell: vmo -po minfree={{minfree}}
+- name: Modifica a configuração de VMO maxfree
+  shell: vmo -po maxfree={{maxfree}}
+- name: Verifica a configuração de VMO page_steal_method
+  shell: vmo -o page_steal_method | awk '{ print $NF }'
+  register: resultado_page_steal_method
+- name: Modifica a configuração de VMO page_steal_method
+  shell: yes | vmo -ro page_steal_method={{page_steal_method}}
+  when: resultado_page_steal_method.stdout != page_steal_method
+  register: page_steal_method_alterado
+- name: Verifica a configuração de VMO memory_affinity
+  shell: vmo -o memory_affinity | awk '{ print $NF }'
+  register: resultado_memory_affinity
+- name: Modifica a configuração de VMO memory_affinity
+  shell: yes | vmo -ro memory_affinity={{memory_affinity}}
+  when: resultado_memory_affinity.stdout != memory_affinity
+  register: memory_affinity_alterado
+- name: Modifica a configuração de VMO v_pinshm
+  shell: vmo -po v_pinshm={{v_pinshm}}
+- name: Modifica a configuração de VMO lgpg_regions
+  shell: vmo -po lgpg_regions={{lgpg_regions}}
+- name: Modifica a configuração de VMO lgpg_size
+  shell: vmo -po lgpg_size={{lgpg_size}}
+- name: Modifica a configuração de VMO maxpin%
+  shell: vmo -po maxpin%={{maxpin}}
+- name: Modifica a configuração de VMO esid_allocator
+  shell: vmo -po esid_allocator={{esid_allocator}}
+# Modificação de NO:
+- name: Modifica a configuração de NO rfc1323
+  shell: no -po rfc1323={{rfc1323}}
+- name: Modifica a configuração de NO sb_max
+  shell: no -po sb_max={{sb_max}}
+- name: Modifica a configuração de NO tcp_recvspace
+  shell: no -po tcp_recvspace={{tcp_recvspace}}
+- name: Modifica a configuração de NO tcp_sendspace
+  shell: no -po tcp_sendspace={{tcp_sendspace}}
+# Modificação do sys0:
+- name: Modifica a configuração de sys0 ncargs
+  shell: chdev -l sys0 -a ncargs={{ncargs}}
+- name: Modifica a configuração de sys0 maxuproc
+  shell: chdev -l sys0 -a maxuproc={{maxuproc}}
+- name: Verifica a configuração de iocp para o próximo boot
+  shell: lsattr -El iocp0 -a autoconfig | awk '{ print $2 }'
+  register: resultado_iocp
+- name: Modifica a configuração de iocp para o próximo boot
+  shell: chdev -l iocp0 -a autoconfig={{iocp}} -P
+  when: resultado_iocp.stdout != iocp
+  register: iocp_alterado
+# Criação de Grupos:
+- name: Cria grupo oinstall para o Oracle
+  group: name={{grp_name_oinstall}} gid={{grp_id_oinstall}} state=present
+- name: Cria grupo asmadmin para o Oracle
+  group: name={{grp_name_asmadmin}} gid={{grp_id_asmadmin}} state=present
+- name: Cria grupo asmdba para o Oracle
+  group: name={{grp_name_asmdba}} gid={{grp_id_asmdba}} state=present
+- name: Cria grupo asmoper para o Oracle
+  group: name={{grp_name_asmoper}} gid={{grp_id_asmoper}} state=present
+- name: Cria grupo bkpdba para o Oracle
+  group: name={{grp_name_bkpdba}} gid={{grp_id_bkpdba}} state=present
+- name: Cria grupo dgdba para o Oracle
+  group: name={{grp_name_dgdba}} gid={{grp_id_dgdba}} state=present
+- name: Cria grupo kmdba para o Oracle
+  group: name={{grp_name_kmdba}} gid={{grp_id_kmdba}} state=present
+- name: Cria grupo dba para o Oracle
+  group: name={{grp_name_dba}} gid={{grp_id_dba}} state=present
+# Criação de Usuários:
+- name: Cria usuário grid para o Oracle
+  user: name={{user_name_grid}} uid={{user_id_grid}} group={{grp_name_oinstall}} home={{user_home_grid}} state=present groups='{{grp_name_dba}},{{grp_name_asmdba}},{{grp_name_bkpdba}},{{grp_name_dgdba}},{{grp_name_kmdba}},{{grp_name_asmadmin}}'
+- name: Cria usuário oracle para o Oracle
+  user: name={{user_name_oracle}} uid={{user_id_oracle}} group={{grp_name_oinstall}} home={{user_home_oracle}} state=present groups='{{grp_name_asmdba}},{{grp_name_asmadmin}}'
+- name: Modifica parâmetros do usuário grid
+  shell: chuser capabilities=CAP_NUMA_ATTACH,CAP_BYPASS_RAC_VMM,CAP_PROPAGATE grid
+# Configuração de ulimit:
+- name: Configura ulimit para o usuário oracle
+  shell: chuser {{item}}=-1 {{user_name_oracle}}
+  with_items:
+    - fsize_hard
+    - data_hard
+    - stack_hard
+    - rss_hard
+    - nofiles_hard
+    - fsize
+    - data
+    - stack
+    - rss
+    - nofiles
+- name: Configura ulimit para o usuário grid
+  shell: chuser {{item}}=-1 {{user_name_grid}}
+  with_items:
+    - fsize_hard
+    - data_hard
+    - stack_hard
+    - rss_hard
+    - nofiles_hard
+    - fsize
+    - data
+    - stack
+    - rss
+    - nofiles
+# Export de variáveis:
+- name: Inclui export de variavel AIXTHREAD_SCOPE no .profile dos usuários oracle e grid
+  lineinfile: path="{{item}}/.profile" line="export AIXTHREAD_SCOPE=S" state=present
+  with_items:
+    - "{{user_home_grid}}"
+    - "{{user_home_oracle}}"
+- name: Inclui export de variavel LDR_CNTRL no .profile dos usuários oracle e grid
+  lineinfile: path="{{item}}/.profile" line="export LDR_CNTRL=DATAPSIZE=64K@TEXTPSIZE=64K@STACKPSIZE=64K" state=present
+  with_items:
+    - "{{user_home_grid}}"
+    - "{{user_home_oracle}}"
+# Execução de Bosboot:
+- name: Executa o bosboot
+  shell: bosboot -a
+  when: (page_steal_method_alterado is changed) or (memory_affinity_alterado is changed) or (iocp_alterado is changed)
+# Reboot dos Hosts:
+- name: Faz o reboot dos hosts
+  shell: sleep 5 && reboot
+  async: 1
+  poll: 0
+  when: (page_steal_method_alterado is changed) or (memory_affinity_alterado is changed) or (iocp_alterado is changed)
+  register: result_reboot
+- name: Aguarda retorno dos hosts
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 30
+    delay: 10
+    timeout: 600
+  when: result_reboot is changed
+- name: Verifica o uptime dos hosts
+  shell: uptime
+  register: result
+  when: result_reboot is changed
+- name: Mostra o uptime dos Hosts
+  debug: msg='{{ result.stdout }}'
+  when: result_reboot is changed
+...

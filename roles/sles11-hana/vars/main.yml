@@ -1,0 +1,6 @@
+target_hosts:        sles
+repo_host:           uatu
+repo_sles11inst:     http://uatu/sles11instdvd
+repo_sles11updt:     http://uatu/sles11updates
+repo_sles11loptools: http://uatu/sles11loptools
+hope_src_files:      /Users/julianobaeta/Google_Drive/Projects/Hope/

@@ -1,0 +1,9 @@
+--- # SAP HANA 1 on SLES 11 SP4 Requisites Playbook
+- hosts: sles
+  user: root
+  become: no
+  connection: ssh
+  gather_facts: no
+  roles:
+  - sles11-hana
+...

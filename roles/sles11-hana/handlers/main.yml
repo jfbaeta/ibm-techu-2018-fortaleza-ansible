@@ -1,0 +1,19 @@
+- name: Run lilo to update /etc/lilo.conf
+  shell: lilo
+  tags: lilo
+- name: Reboot Hosts
+  shell: shutdown -r now
+  async: 0
+  poll: 0
+  ignore_errors: true
+  tags: reboot
+- name: Wait for Hosts Return
+  local_action: wait_for host={{ target_hosts }} state=started
+  tags: wait
+- name: Run Uptime
+  shell: uptime
+  register: result
+  tags: uptime_cmd
+- name: Output Uptime
+  debug: msg='{{ result.stdout }}'
+  tags: uptime_output

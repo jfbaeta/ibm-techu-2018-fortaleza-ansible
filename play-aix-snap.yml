@@ -1,0 +1,12 @@
+- hosts: aix
+  user: root
+  become: no
+  connection: ssh
+  gather_facts: no
+  tasks:
+  - name: Limpa /tmp/ibmsupt
+    file: path=/tmp/ibmsupt state=absent
+  - name: Gera snap na LPAR
+    shell: snap -gc
+  - name: Faz o download dos snaps
+    fetch: src=/tmp/ibmsupt/snap.pax.Z dest=/Users/julianobaeta/Desktop/

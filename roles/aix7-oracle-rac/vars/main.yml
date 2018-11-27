@@ -1,0 +1,31 @@
+---
+# Hosts:
+target_hosts: ws-aix
+# Parâmetros de NO:
+udp_sendspace: "1052672"
+udp_recvspace: "10526720"
+ipqmaxlen:     "512"
+# ID dos Grupos do Oracle:
+grp_id_oinstall: "1000"
+grp_id_asmadmin: "1020"
+grp_id_asmdba:   "1021"
+grp_id_asmoper:  "1022"
+grp_id_bkpdba:   "1023"
+grp_id_dgdba:    "1024"
+grp_id_kmdba:    "1025"
+grp_id_dba:      "1031"
+grp_id_racdba:   "1026"
+# Nome dos Grupos do Oracle:
+grp_name_oinstall: oinstall
+grp_name_asmadmin: asmadmin
+grp_name_asmdba:   asmdba
+grp_name_asmoper:  asmoper
+grp_name_bkpdba:   bkpdba
+grp_name_dgdba:    dgdba
+grp_name_kmdba:    kmdba
+grp_name_dba:      dba
+grp_name_racdba:   racdba
+# Nome dos Usuarios do Oracle:
+user_name_grid:   grid
+user_name_oracle: oracle
+...

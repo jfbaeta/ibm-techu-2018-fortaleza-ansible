@@ -1,0 +1,47 @@
+---
+# Modificação de NO:
+- name: Modifica a configuração de NO udp_sendspace
+  shell: no -po udp_sendspace={{udp_sendspace}}
+- name: Modifica a configuração de NO udp_recvspace
+  shell: no -po udp_recvspace={{udp_recvspace}}
+- name: Verifica a configuração de NO ipqmaxlen
+  shell: no -o ipqmaxlen | awk '{ print $NF }'
+  register: resultado_ipqmaxlen
+- name: Modifica a configuração de NO ipqmaxlen
+  shell: no -ro ipqmaxlen={{ipqmaxlen}}
+  when: resultado_ipqmaxlen.stdout != ipqmaxlen
+  register: ipqmaxlen_alterado
+# Criação de Grupos:
+- name: Cria grupo racdba para o Oracle
+  group: name={{grp_name_racdba}} gid={{grp_id_racdba}} state=present
+# Adição de usuários no grupo racdba
+- name: Adiciona usuário grid no grupo racdba
+  user: name={{user_name_grid}} groups='{{grp_name_asmdba}},{{grp_name_asmadmin}},{{grp_name_racdba}}' state=present
+- name: Adiciona usuário oracle no grupo racdba
+  user: name={{user_name_oracle}} groups='{{grp_name_dba}},{{grp_name_asmdba}},{{grp_name_bkpdba}},{{grp_name_dgdba}},{{grp_name_kmdba}},{{grp_name_asmadmin}},{{grp_name_racdba}}' state=present
+# Execução de Bosboot:
+- name: Executa o bosboot
+  shell: bosboot -a
+  when: ipqmaxlen_alterado is changed
+# Reboot dos Hosts:
+- name: Faz o reboot dos hosts
+  shell: sleep 5 && reboot
+  async: 1
+  poll: 0
+  when: ipqmaxlen_alterado is changed
+  register: result_reboot
+- name: Aguarda retorno dos hosts
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 30
+    delay: 10
+    timeout: 600
+  when: result_reboot is changed
+- name: Verifica o uptime dos hosts
+  shell: uptime
+  register: result
+  when: result_reboot is changed
+- name: Output Uptime
+  debug: msg='{{ result.stdout }}'
+  when: result_reboot is changed
+...

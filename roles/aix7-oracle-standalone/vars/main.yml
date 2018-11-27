@@ -1,0 +1,56 @@
+---
+# Hosts:
+target_hosts: ws-aix
+# Parâmetros de VMO:
+minperm:           "3"
+maxperm:           "90"
+maxclient:         "90"
+strict_maxclient:  "1"
+strict_maxperm:    "0"
+lru_poll_interval: "10"
+minfree:           "960"
+maxfree:           "1088"
+page_steal_method: "1"
+memory_affinity:   "1"
+v_pinshm:          "0"
+lgpg_regions:      "0"
+lgpg_size:         "0"
+maxpin:            "90"
+esid_allocator:    "1"
+# Parâmetros de NO:
+rfc1323:       "1"
+sb_max:        "21053440"
+tcp_recvspace: "262144"
+tcp_sendspace: "262144"
+# Parâmetros de sys0:
+ncargs:   "256"
+maxuproc: "16384"
+iocp:     available
+# ID dos Grupos do Oracle:
+grp_id_oinstall: "1000"
+grp_id_asmadmin: "1020"
+grp_id_asmdba:   "1021"
+grp_id_asmoper:  "1022"
+grp_id_bkpdba:   "1023"
+grp_id_dgdba:    "1024"
+grp_id_kmdba:    "1025"
+grp_id_dba:      "1031"
+# Nome dos Grupos do Oracle:
+grp_name_oinstall: oinstall
+grp_name_asmadmin: asmadmin
+grp_name_asmdba:   asmdba
+grp_name_asmoper:  asmoper
+grp_name_bkpdba:   bkpdba
+grp_name_dgdba:    dgdba
+grp_name_kmdba:    kmdba
+grp_name_dba:      dba
+# ID dos Usuarios do Oracle:
+user_id_grid:   "1100"
+user_id_oracle: "1101"
+# Nome dos Usuarios do Oracle:
+user_name_grid:   grid
+user_name_oracle: oracle
+# Home Directory dos Usuarios do Oracle:
+user_home_grid:   /home/grid
+user_home_oracle: /home/oracle
+...

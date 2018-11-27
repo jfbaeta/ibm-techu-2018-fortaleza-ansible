@@ -1,0 +1,10 @@
+--- # Playbook para requisitos do Oracle 12c em AIX 7.2.
+- hosts: aix
+  user: root
+  become: no
+  connection: ssh
+  gather_facts: no
+  roles:
+  - aix7-oracle-standalone
+  - aix7-oracle-rac
+...

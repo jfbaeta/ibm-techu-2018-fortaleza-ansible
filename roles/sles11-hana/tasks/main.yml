@@ -1,0 +1,129 @@
+- name: Uninstall AppArmor Pattern Packages
+  zypper: name={{ item }} state=absent
+  with_items:
+  - apparmor-admin_en
+  - apparmor-docs
+  - apparmor-profiles
+  - apparmor-parser
+  - apparmor-profile-editor
+  - apparmor-utils
+  - yast2-apparmor
+  tags: apparmor
+- name: Uninstall Ulimit
+  zypper: name=ulimit state=absent
+  tags: ulimit
+- name: Remove SLES11 Default Zypper Repo
+  zypper_repository: name='SLES-for-SAP-Applications 11.4.4-1.2' state=absent
+  tags: remove_zypper
+- name: Add HTTP SLES11 Install Zypper Repo
+  zypper_repository: repo={{ repo_sles11inst }} name=sles11inst state=present
+  tags: add_zypper_install
+- name: Add HTTP SLES11 Update Zypper Repo
+  zypper_repository: repo={{ repo_sles11updt }} name=sles11updt state=present
+  tags: add_zypper_update
+- name: Install SAP HANA Pattern Packages
+  zypper: name={{ item }} state=present
+  with_items:
+  - findutils-locate
+  - xfsprogs
+  - krb5-32bit
+  - libssh2-1
+  - libicu
+  - autoyast2-installation
+  - cairo
+  - bc
+  - gtk2
+  - mozilla-xulrunner192
+  - expect
+  - sudo
+  - syslog-ng
+  - nfs-client
+  - tcsh
+  - yast2-ncurses
+  - ntp
+  - numactl
+  - sysstat
+  - java-1_7_1-ibm-jdbc
+  - findutils-locate
+  - krb5-client
+  - iptraf
+  - sensors
+  - bing
+  - graphviz
+  - bonnie
+  - kernel-bigmem
+  notify:
+  - Reboot Hosts
+  - Wait for Hosts Return
+  - Run Uptime
+  - Output Uptime
+  tags: hana_pattern
+- name: Install unrar
+  zypper: name=unrar state=present
+  tags: unrar
+- name: Install Linux on Power Tools
+  zypper: name={{ repo_sles11loptools }}/{{ item }} state=present
+  with_items:
+  - librtas-1.4.1-2.ppc64.rpm
+  - src-3.1.5.14-17067.ppc.rpm
+  - rsct.core.utils-3.1.5.14-17067.ppc.rpm
+  - rsct.core-3.1.5.14-17067.ppc.rpm
+  - devices.chrp.base.ServiceRM-2.4.0.0-17067.ppc.rpm
+  - DynamicRM-1.3.9-9.ppc.rpm
+  - iprutils-2.4.14-1.ppc64.rpm
+  - lsvpd-1.7.4-0.ppc64.rpm
+  - libvpd2-2.2.3-0.ppc64.rpm
+  - libservicelog-1.1.14-1.ppc64.rpm
+  - servicelog-1.1.12-1.ppc64.rpm
+  - powerpc-utils-1.3.2-3.ppc64.rpm
+  - ppc64-diag-2.6.10-2.ppc64.rpm
+  - ibm-web-user-interface-5.7-4.el7.noarch.rpm
+  - ibm-server-consolidation-tool-1.2.3-1.noarch.rpm
+  - ibmPMLinux-3.4.1-1.ppc64.rpm
+  - lpa-0-5.4.ppc64.rpm
+  - esagent.pLinux-4.1.0-12.noarch.rpm
+  - nmon-16f-0.sles11.ppc64.rpm
+  - pseries-energy-1.4.0-1.sles11.ppc64.rpm
+  - nvme-cli-0.7-32.2.ppc64.rpm
+  environment:
+    http_proxy: ""
+  tags: loptools
+- name: Update SLES11 SP4
+  zypper: name='*' state=latest
+  environment:
+    http_proxy: ""
+  notify:
+  - Run lilo to update /etc/lilo.conf
+  - Reboot Hosts
+  - Wait for Hosts Return
+  - Run Uptime
+  - Output Uptime
+  tags: update
+- name: Create /root/.ssh Directory
+  file: path=/root/.ssh state=directory
+  tags: ssh_dir
+- name: Copy Authorized Keys to Hosts
+  authorized_key: user=root state=present key='{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}'
+  tags: auth_key
+- name: Create /opt/hope Directory
+  file: path=/opt/hope state=directory
+  tags: hope_dir
+- name: Upload HOPE files
+  synchronize:
+    src: '{{ hope_src_files }}'
+    dest: /opt/hope/
+    rsync_opts:
+    - '--exclude=.git'
+    - '--exclude=.gitignore'
+    - '--exclude=.vscode'
+    - '--exclude=LICENSE.md'
+    - '--exclude=docs'
+  tags: upload_hope
+- name: Add /opt/hope path to $PATH in /etc/bash.bashrc
+  lineinfile: path=/etc/bash.bashrc line='export PATH=$PATH:/opt/hope' state=present
+  tags: bashrc
+- name: Run HOPE
+  shell: /opt/hope/hope -lS
+  register: result
+  tags: run_hope
+- debug: msg='{{ result.stdout_lines }}'
